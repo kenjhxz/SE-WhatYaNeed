@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatYaNeed - Community Needs Board</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 0.5rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3aa5c7;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+            margin-right: 0.5rem;
+        }
+
+        .btn-outline:hover {
+            background-color: white;
+            color: var(--primary);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            padding: 2rem 0;
+            flex: 1;
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .active-section {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .hero {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: linear-gradient(rgba(67, 97, 238, 0.05), rgba(58, 12, 163, 0.1));
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+
+        .search-bar {
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px 0 0 4px;
+            font-size: 1rem;
+        }
+
+        .search-bar button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        /* Cards and Posts */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .post-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .post-image {
+            height: 160px;
+            background-color: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+        }
+
+        .post-content {
+            padding: 1.5rem;
+        }
+
+        .post-title {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .post-details {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-details span {
+            margin-right: 1rem;
+        }
+
+        .post-description {
+            margin-bottom: 1.5rem;
+        }
+
+        .post-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-urgent {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Forms */
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--secondary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Dashboard */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        .dashboard-card i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-card h3 {
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        /* Notifications */
+        .notification {
+            padding: 1rem;
+            border-left: 4px solid var(--primary);
+            background-color: white;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .notification.unread {
+            border-left-color: var(--warning);
+            background-color: #fff9f9;
+        }
+
+        /* Login Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .user-type-selector {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--light-gray);
+        }
+
+        .user-type {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .user-type.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--success);
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section ul li a {
+            color: #ddd;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-section ul li a:hover {
+            color: white;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 1.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            nav ul {
+                margin-top: 1rem;
+                justify-content: center;
+            }
+
+            nav ul li {
+                margin: 0 0.5rem;
+            }
+
+            .user-actions {
+                margin-top: 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+            }
+        }
+
+        /* User profile in header */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with Navigation -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-hands-helping"></i>
+                    <span>WhatYaNeed</span>
+                </div>
+                <nav id="main-nav">
+                    <ul>
+                        <li><a href="#" class="nav-link" data-section="home">Home</a></li>
+                        <li><a href="#" class="nav-link" data-section="requests">Requests</a></li>
+                        <li><a href="#" class="nav-link" data-section="dashboard">Dashboard</a></li>
+                        <li><a href="#" class="nav-link" data-section="create">Create Request</a></li>
+                    </ul>
+                </nav>
+                <div class="user-actions" id="user-actions">
+                    <button class="btn btn-outline" id="login-btn">Login</button>
+                    <button class="btn btn-primary" id="register-btn">Register</button>
+                </div>
+                <div class="user-profile" id="user-profile" style="display: none;">
+                    <div class="user-avatar" id="user-avatar">JD</div>
+                    <div class="user-info">
+                        <span id="user-name">John Doe</span>
+                        <span class="user-role" id="user-role">Volunteer</span>
+                    </div>
+                    <button class="btn btn-outline" id="logout-btn" style="margin-left: 1rem;">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Home Section -->
+            <section id="home" class="page-section active-section">
+                <div class="hero">
+                    <h1>Connecting Community Needs with Helpers</h1>
+                    <p>WhatYaNeed is a platform where community members can request help and volunteers can offer assistance for various needs.</p>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search for requests...">
+                        <button><i class="fas fa-search"></i> Search</button>
+                    </div>
+                </div>
+
+                <h2>Recent Requests</h2>
+                <div class="posts-grid">
+                    <!-- Sample Request Cards -->
+                    <div class="post-card">
+                        <div class="post-image">
+                            <i class="fas fa-tools fa-3x"></i>
+                        </div>
+                        <div class="post-content">
+                            <h3 class="post-title">Fix Leaky Faucet</h3>
+                            <div class="post-details">
+                                <span><i class="fas fa-map-marker-alt"></i> Downtown</span>
+                                <span><i class="fas fa-clock"></i> Urgent</span>
+                            </div>
+                            <p class="post-description">My kitchen faucet has been leaking for days and I need help fixing it.</p>
+                            <span class="post-status status-urgent">Urgent</span>
+                        </div>
+                    </div>
+
+                    <div class="post-card">
+                        <div class="post-image">
+                            <i class="fas fa-shopping-cart fa-3x"></i>
+                        </div>
+                        <div class="post-content">
+                            <h3 class="post-title">Grocery Shopping Help</h3>
+                            <div class="post-details">
+                                <span><i class="fas fa-map-marker-alt"></i> Westside</span>
+                                <span><i class="fas fa-clock"></i> Moderate</span>
+                            </div>
+                            <p class="post-description">I'm elderly and need assistance with grocery shopping every week.</p>
+                            <span class="post-status status-pending">Pending</span>
+                        </div>
+                    </div>
+
+                    <div class="post-card">
+                        <div class="post-image">
+                            <i class="fas fa-paint-brush fa-3x"></i>
+                        </div>
+                        <div class="post-content">
+                            <h3 class="post-title">Room Painting</h3>
+                            <div class="post-details">
+                                <span><i class="fas fa-map-marker-alt"></i> Eastside</span>
+                                <span><i class="fas fa-clock"></i> Low</span>
+                            </div>
+                            <p class="post-description">Need help painting my child's bedroom this weekend.</p>
+                            <span class="post-status status-completed">Completed</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Requests Section -->
+            <section id="requests" class="page-section">
+                <h2>All Active Requests</h2>
+                <div class="filters">
+                    <div class="form-group">
+                        <input type="text" placeholder="Search by keyword...">
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <div class="form-group">
+                            <select>
+                                <option>All Categories</option>
+                                <option>Home Repair</option>
+                                <option>Groceries</option>
+                                <option>Transportation</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select>
+                                <option>Any Urgency</option>
+                                <option>Low</option>
+                                <option>Moderate</option>
+                                <option>Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select>
+                                <option>All Locations</option>
+                                <option>Downtown</option>
+                                <option>Westside</option>
+                                <option>Eastside</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="posts-grid">
+                    <!-- More sample requests would go here -->
+                    <div class="post-card">
+                        <div class="post-image">
+                            <i class="fas fa-car fa-3x"></i>
+                        </div>
+                        <div class="post-content">
+                            <h3 class="post-title">Ride to Doctor Appointment</h3>
+                            <div class="post-details">
+                                <span><i class="fas fa-map-marker-alt"></i> Northside</span>
+                                <span><i class="fas fa-clock"></i> Moderate</span>
+                            </div>
+                            <p class="post-description">Need a ride to my doctor's appointment next Tuesday at 10 AM.</p>
+                            <span class="post-status status-pending">Pending</span>
+                        </div>
+                    </div>
+
+                    <div class="post-card">
+                        <div class="post-image">
+                            <i class="fas fa-laptop fa-3x"></i>
+                        </div>
+                        <div class="post-content">
+                            <h3 class="post-title">Computer Help</h3>
+                            <div class="post-details">
+                                <span><i class="fas fa-map-marker-alt"></i> Southside</span>
+                                <span><i class="fas fa-clock"></i> Low</span>
+                            </div>
+                            <p class="post-description">My computer is running slow and I need help optimizing it.</p>
+                            <span class="post-status status-pending">Pending</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="page-section">
+                <h2>Your Dashboard</h2>
+                <div class="dashboard-cards">
+                    <div class="dashboard-card">
+                        <i class="fas fa-list-alt"></i>
+                        <h3>Your Requests</h3>
+                        <p>5 Active</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>Completed</h3>
+                        <p>12 Tasks</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <i class="fas fa-star"></i>
+                        <h3>Your Rating</h3>
+                        <p>4.8/5 Stars</p>
+                    </div>
+                </div>
+
+                <h3>Your Active Requests</h3>
+                <div class="posts-grid">
+                    <div class="post-card">
+                        <div class="post-image">
+                            <i class="fas fa-tools fa-3x"></i>
+                        </div>
+                        <div class="post-content">
+                            <h3 class="post-title">Fix Leaky Faucet</h3>
+                            <div class="post-details">
+                                <span><i class="fas fa-map-marker-alt"></i> Downtown</span>
+                                <span><i class="fas fa-clock"></i> Urgent</span>
+                            </div>
+                            <p class="post-description">My kitchen faucet has been leaking for days and I need help fixing it.</p>
+                            <span class="post-status status-pending">Pending</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Notifications</h3>
+                <div class="notifications">
+                    <div class="notification unread">
+                        <h4>New Offer for Your Request</h4>
+                        <p>John Doe has offered to help with your faucet repair.</p>
+                        <small>10 minutes ago</small>
+                    </div>
+                    <div class="notification">
+                        <h4>Request Completed</h4>
+                        <p>Your grocery shopping request has been marked as completed.</p>
+                        <small>2 days ago</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Create Request Section -->
+            <section id="create" class="page-section">
+                <div class="form-container">
+                    <h2 class="form-title">Create New Request</h2>
+                    <form id="request-form">
+                        <div class="form-group">
+                            <label for="title">Title</label>
+                            <input type="text" id="title" placeholder="What do you need help with?">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" placeholder="Please describe your request in detail..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category">
+                                <option>Select a category</option>
+                                <option>Home Repair</option>
+                                <option>Groceries</option>
+                                <option>Transportation</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="urgency">Urgency</label>
+                            <select id="urgency">
+                                <option>Select urgency level</option>
+                                <option>Low</option>
+                                <option>Moderate</option>
+                                <option>Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <input type="text" id="address" placeholder="Where is help needed?">
+                        </div>
+                        <div class="form-group">
+                            <label for="image">Upload Image (Optional)</label>
+                            <input type="file" id="image">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Request</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Admin Section -->
+            <section id="admin" class="page-section">
+                <h2>Admin Dashboard</h2>
+                <div class="dashboard-cards">
+                    <div class="dashboard-card">
+                        <i class="fas fa-flag"></i>
+                        <h3>Flagged Content</h3>
+                        <p>3 Items</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Active Users</h3>
+                        <p>142 Users</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <i class="fas fa-tasks"></i>
+                        <h3>Pending Approval</h3>
+                        <p>7 Requests</p>
+                    </div>
+                </div>
+
+                <h3>Requests Needing Approval</h3>
+                <div class="posts-grid">
+                    <div class="post-card">
+                        <div class="post-content">
+                            <h3 class="post-title">Moving Assistance</h3>
+                            <div class="post-details">
+                                <span><i class="fas fa-user"></i> New Requester</span>
+                                <span><i class="fas fa-map-marker-alt"></i> Westside</span>
+                            </div>
+                            <p class="post-description">Need help moving furniture this weekend.</p>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <button class="btn btn-primary">Approve</button>
+                                <button class="btn btn-outline" style="color: var(--dark); border-color: var(--gray);">Deny</button>
+                                <button class="btn btn-outline" style="color: var(--dark); border-color: var(--gray);">Flag</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Login Modal -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-login">&times;</span>
+            <h2 class="form-title">Login to WhatYaNeed</h2>
+            <form id="login-form">
+                <div class="user-type-selector">
+                    <div class="user-type active" data-role="requester">Requester</div>
+                    <div class="user-type" data-role="volunteer">Volunteer</div>
+                    <div class="user-type" data-role="admin">Admin</div>
+                </div>
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="Your email address">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="Your password">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                <p style="text-align: center; margin-top: 1rem;">
+                    Don't have an account? <a href="#" id="switch-to-register">Register now</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="register-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-register">&times;</span>
+            <h2 class="form-title">Create an Account</h2>
+            <form id="register-form">
+                <div class="user-type-selector">
+                    <div class="user-type active" data-role="requester">Requester</div>
+                    <div class="user-type" data-role="volunteer">Volunteer</div>
+                    <div class="user-type" data-role="admin">Admin</div>
+                </div>
+                <div class="form-group">
+                    <label for="register-name">Full Name</label>
+                    <input type="text" id="register-name" required placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required placeholder="Your email address">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required placeholder="Create a password">
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm">Confirm Password</label>
+                    <input type="password" id="register-confirm" required placeholder="Confirm your password">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+                <p style="text-align: center; margin-top: 1rem;">
+                    Already have an account? <a href="#" id="switch-to-login">Login now</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>WhatYaNeed</h3>
+                    <p>Connecting community needs with volunteers who can help.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Browse Requests</a></li>
+                        <li><a href="#">How It Works</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-envelope"></i> support@whatyaneed.com</a></li>
+                        <li><a href="#"><i class="fas fa-phone"></i> (555) 123-4567</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 WhatYaNeed - Ducut, Mascardo. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sample user data for demonstration
+        const users = [
+            { id: 1, name: "John Doe", email: "requester@example.com", password: "password123", role: "requester", avatar: "JD" },
+            { id: 2, name: "Jane Smith", email: "volunteer@example.com", password: "password123", role: "volunteer", avatar: "JS" },
+            { id: 3, name: "Admin User", email: "admin@example.com", password: "password123", role: "admin", avatar: "AU" }
+        ];
+
+        // Current user state
+        let currentUser = null;
+
+        // DOM Elements
+        const loginModal = document.getElementById('login-modal');
+        const registerModal = document.getElementById('register-modal');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const closeLogin = document.getElementById('close-login');
+        const closeRegister = document.getElementById('close-register');
+        const switchToRegister = document.getElementById('switch-to-register');
+        const switchToLogin = document.getElementById('switch-to-login');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const userActions = document.getElementById('user-actions');
+        const userProfile = document.getElementById('user-profile');
+        const userName = document.getElementById('user-name');
+        const userRole = document.getElementById('user-role');
+        const userAvatar = document.getElementById('user-avatar');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userTypes = document.querySelectorAll('.user-type');
+        const mainNav = document.getElementById('main-nav');
+
+        // Event Listeners
+        loginBtn.addEventListener('click', () => loginModal.style.display = 'flex');
+        registerBtn.addEventListener('click', () => registerModal.style.display = 'flex');
+        closeLogin.addEventListener('click', () => loginModal.style.display = 'none');
+        closeRegister.addEventListener('click', () => registerModal.style.display = 'none');
+        switchToRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginModal.style.display = 'none';
+            registerModal.style.display = 'flex';
+        });
+        switchToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerModal.style.display = 'none';
+            loginModal.style.display = 'flex';
+        });
+        logoutBtn.addEventListener('click', logout);
+
+        // User type selection
+        userTypes.forEach(type => {
+            type.addEventListener('click', function() {
+                userTypes.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Form submissions
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const role = document.querySelector('#login-modal .user-type.active').dataset.role;
+            
+            login(email, password, role);
+        });
+
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+            const role = document.querySelector('#register-modal .user-type.active').dataset.role;
+            
+            if (password !== confirm) {
+                alert("Passwords don't match!");
+                return;
+            }
+            
+            register(name, email, password, role);
+        });
+
+        // Simple navigation system
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetSection = this.getAttribute('data-section');
+                
+                // Hide all sections
+                document.querySelectorAll('.page-section').forEach(section => {
+                    section.classList.remove('active-section');
+                });
+                
+                // Show target section
+                document.getElementById(targetSection).classList.add('active-section');
+            });
+        });
+
+        // Request form submission
+        document.getElementById('request-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Request submitted successfully!');
+            this.reset();
+        });
+
+        // Login function
+        function login(email, password, role) {
+            const user = users.find(u => u.email === email && u.password === password && u.role === role);
+            
+            if (user) {
+                currentUser = user;
+                updateUIAfterLogin();
+                loginModal.style.display = 'none';
+                alert(`Welcome back, ${user.name}!`);
+            } else {
+                alert('Invalid credentials or role selection. Please try again.');
+            }
+        }
+
+        // Register function (simplified for demo)
+        function register(name, email, password, role) {
+            // In a real app, this would send data to a server
+            alert(`Account created for ${name} (${role}). You can now login.`);
+            registerModal.style.display = 'none';
+            loginModal.style.display = 'flex';
+            
+            // Pre-fill the login form
+            document.getElementById('login-email').value = email;
+            document.getElementById('login-password').value = password;
+            
+            // Set the role
+            userTypes.forEach(t => t.classList.remove('active'));
+            document.querySelector(`.user-type[data-role="${role}"]`).classList.add('active');
+        }
+
+        // Logout function
+        function logout() {
+            currentUser = null;
+            userActions.style.display = 'flex';
+            userProfile.style.display = 'none';
+            alert('You have been logged out.');
+        }
+
+        // Update UI after login
+        function updateUIAfterLogin() {
+            userActions.style.display = 'none';
+            userProfile.style.display = 'flex';
+            userName.textContent = currentUser.name;
+            userRole.textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+            userAvatar.textContent = currentUser.avatar;
+            
+            // Show/hide navigation based on role
+            if (currentUser.role === 'admin') {
+                document.querySelector('a[data-section="admin"]').parentElement.style.display = 'list-item';
+            } else {
+                document.querySelector('a[data-section="admin"]').parentElement.style.display = 'none';
+            }
+            
+            if (currentUser.role === 'requester') {
+                document.querySelector('a[data-section="create"]').parentElement.style.display = 'list-item';
+            } else {
+                document.querySelector('a[data-section="create"]').parentElement.style.display = 'none';
+            }
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === loginModal) loginModal.style.display = 'none';
+            if (e.target === registerModal) registerModal.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
