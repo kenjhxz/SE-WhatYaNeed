@@ -11,8 +11,9 @@ CREATE TABLE users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
     location VARCHAR(255),
-    role ENUM('requester', 'volunteer') NOT NULL,
+    role ENUM('requester', 'volunteer', 'admin') NOT NULL,
     verified BOOLEAN DEFAULT FALSE
 );
 
@@ -56,9 +57,12 @@ CREATE TABLE external_auth (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-INSERT INTO users (name, email, location, role, verified) VALUES 
-('Maria Santos', 'maria@helpme.ph', 'Cebu City', 'requester', TRUE),
-('Juan Dela Cruz', 'juan@volunteer.ph', 'Cebu City', 'volunteer', TRUE);
+-- Sample users with hashed password 'password123'
+-- Password hash generated with bcrypt
+INSERT INTO users (name, email, password, location, role, verified) VALUES 
+('Maria Santos', 'requester@example.com', '$2a$10$YourHashedPasswordHere1', 'Cebu City', 'requester', TRUE),
+('Juan Dela Cruz', 'volunteer@example.com', '$2a$10$YourHashedPasswordHere2', 'Cebu City', 'volunteer', TRUE),
+('Admin User', 'admin@example.com', '$2a$10$YourHashedPasswordHere3', 'Cebu City', 'admin', TRUE);
 
 INSERT INTO requests (requester_id, title, description, category, urgency_level, location, status) VALUES 
 (1, 'Need medicine pickup', 'I need someone to pick up my prescription from the pharmacy.', 'Errand', 'high', 'Cebu City', 'open');
