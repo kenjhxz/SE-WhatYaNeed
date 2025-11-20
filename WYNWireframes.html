@@ -530,7 +530,8 @@
                         <li><a href="#" class="nav-link" data-section="home">Home</a></li>
                         <li><a href="#" class="nav-link" data-section="requests">Requests</a></li>
                         <li><a href="#" class="nav-link" data-section="dashboard">Dashboard</a></li>
-                        <li><a href="#" class="nav-link" data-section="create">Create Request</a></li>
+                        <li style="display: none;" id="create-nav"><a href="#" class="nav-link" data-section="create">Create Request</a></li>
+                        <li style="display: none;" id="admin-nav"><a href="#" class="nav-link" data-section="admin">Admin</a></li>
                     </ul>
                 </nav>
                 <div class="user-actions" id="user-actions">
@@ -919,13 +920,6 @@
     </footer>
 
     <script>
-        // Sample user data for demonstration
-        const users = [
-            { id: 1, name: "John Doe", email: "requester@example.com", password: "password123", role: "requester", avatar: "JD" },
-            { id: 2, name: "Jane Smith", email: "volunteer@example.com", password: "password123", role: "volunteer", avatar: "JS" },
-            { id: 3, name: "Admin User", email: "admin@example.com", password: "password123", role: "admin", avatar: "AU" }
-        ];
-
         // Current user state
         let currentUser = null;
 
@@ -948,6 +942,9 @@
         const logoutBtn = document.getElementById('logout-btn');
         const userTypes = document.querySelectorAll('.user-type');
         const mainNav = document.getElementById('main-nav');
+
+        // Check if user is already logged in
+        checkSession();
 
         // Event Listeners
         loginBtn.addEventListener('click', () => loginModal.style.display = 'flex');
@@ -975,29 +972,63 @@
         });
 
         // Form submissions
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             const role = document.querySelector('#login-modal .user-type.active').dataset.role;
+
+            // Client-side validation
+            if (!email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
             
-            login(email, password, role);
+            await login(email, password, role);
         });
 
-        registerForm.addEventListener('submit', function(e) {
+        registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('register-name').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const confirm = document.getElementById('register-confirm').value;
             const role = document.querySelector('#register-modal .user-type.active').dataset.role;
-            
-            if (password !== confirm) {
-                alert("Passwords don't match!");
+
+            // Client-side validation
+            if (!name || !email || !password || !confirm) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            if (name.length < 2) {
+                showError('Name must be at least 2 characters long');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters long');
                 return;
             }
             
-            register(name, email, password, role);
+            if (password !== confirm) {
+                showError("Passwords don't match!");
+                return;
+            }
+            
+            await register(name, email, password, role);
         });
 
         // Simple navigation system
@@ -1013,52 +1044,192 @@
                 
                 // Show target section
                 document.getElementById(targetSection).classList.add('active-section');
+
+                // Load data for specific sections
+                if (targetSection === 'requests') {
+                    loadRequests();
+                } else if (targetSection === 'dashboard' && currentUser) {
+                    loadDashboard();
+                } else if (targetSection === 'admin' && currentUser && currentUser.role === 'admin') {
+                    loadAdminDashboard();
+                }
             });
         });
 
         // Request form submission
-        document.getElementById('request-form').addEventListener('submit', function(e) {
+        document.getElementById('request-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            alert('Request submitted successfully!');
-            this.reset();
+            
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const category = document.getElementById('category').value;
+            const urgency = document.getElementById('urgency').value;
+            const address = document.getElementById('address').value;
+
+            // Client-side validation
+            if (!title || !description || !category || !urgency || !address) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            if (title.length < 5 || title.length > 150) {
+                showError('Title must be between 5 and 150 characters');
+                return;
+            }
+
+            if (description.length < 10) {
+                showError('Description must be at least 10 characters long');
+                return;
+            }
+
+            if (category === 'Select a category') {
+                showError('Please select a valid category');
+                return;
+            }
+
+            if (urgency === 'Select urgency level') {
+                showError('Please select urgency level');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/requests', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title, description, category, urgency, address })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Request submitted successfully!');
+                    this.reset();
+                    // Reload dashboard after a short delay
+                    setTimeout(() => {
+                        document.querySelector('.nav-link[data-section="dashboard"]').click();
+                    }, 1500);
+                } else {
+                    showError(data.error || 'Failed to submit request');
+                }
+            } catch (error) {
+                console.error('Error submitting request:', error);
+                showError('Failed to submit request. Please try again.');
+            }
         });
 
-        // Login function
-        function login(email, password, role) {
-            const user = users.find(u => u.email === email && u.password === password && u.role === role);
-            
-            if (user) {
-                currentUser = user;
-                updateUIAfterLogin();
-                loginModal.style.display = 'none';
-                alert(`Welcome back, ${user.name}!`);
-            } else {
-                alert('Invalid credentials or role selection. Please try again.');
+        // Check if user is logged in
+        async function checkSession() {
+            try {
+                const response = await fetch('/api/user');
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    updateUIAfterLogin();
+                }
+            } catch (error) {
+                // User not logged in, which is fine
+                console.log('No active session');
             }
         }
 
-        // Register function (simplified for demo)
-        function register(name, email, password, role) {
-            // In a real app, this would send data to a server
-            alert(`Account created for ${name} (${role}). You can now login.`);
-            registerModal.style.display = 'none';
-            loginModal.style.display = 'flex';
-            
-            // Pre-fill the login form
-            document.getElementById('login-email').value = email;
-            document.getElementById('login-password').value = password;
-            
-            // Set the role
-            userTypes.forEach(t => t.classList.remove('active'));
-            document.querySelector(`.user-type[data-role="${role}"]`).classList.add('active');
+        // Login function
+        async function login(email, password, role) {
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password, role })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentUser = data.user;
+                    updateUIAfterLogin();
+                    loginModal.style.display = 'none';
+                    showSuccess(`Welcome back, ${data.user.name}!`);
+                } else {
+                    showError(data.error || 'Login failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Failed to login. Please try again.');
+            }
+        }
+
+        // Register function
+        async function register(name, email, password, role) {
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password, role })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess(`Account created successfully for ${name}! You can now login.`);
+                    registerModal.style.display = 'none';
+                    loginModal.style.display = 'flex';
+                    
+                    // Pre-fill the login form
+                    document.getElementById('login-email').value = email;
+                    document.getElementById('login-password').value = password;
+                    
+                    // Set the role
+                    userTypes.forEach(t => t.classList.remove('active'));
+                    const loginUserTypes = document.querySelectorAll('#login-modal .user-type');
+                    loginUserTypes.forEach(t => {
+                        if (t.dataset.role === role) {
+                            t.classList.add('active');
+                        } else {
+                            t.classList.remove('active');
+                        }
+                    });
+                } else {
+                    showError(data.error || 'Registration failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showError('Failed to register. Please try again.');
+            }
         }
 
         // Logout function
-        function logout() {
-            currentUser = null;
-            userActions.style.display = 'flex';
-            userProfile.style.display = 'none';
-            alert('You have been logged out.');
+        async function logout() {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    currentUser = null;
+                    userActions.style.display = 'flex';
+                    userProfile.style.display = 'none';
+                    
+                    // Hide role-specific navigation
+                    document.getElementById('create-nav').style.display = 'none';
+                    document.getElementById('admin-nav').style.display = 'none';
+                    
+                    // Go back to home
+                    document.querySelectorAll('.page-section').forEach(section => {
+                        section.classList.remove('active-section');
+                    });
+                    document.getElementById('home').classList.add('active-section');
+                    
+                    showSuccess('You have been logged out.');
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+                showError('Failed to logout. Please try again.');
+            }
         }
 
         // Update UI after login
@@ -1071,16 +1242,121 @@
             
             // Show/hide navigation based on role
             if (currentUser.role === 'admin') {
-                document.querySelector('a[data-section="admin"]').parentElement.style.display = 'list-item';
+                document.getElementById('admin-nav').style.display = 'list-item';
             } else {
-                document.querySelector('a[data-section="admin"]').parentElement.style.display = 'none';
+                document.getElementById('admin-nav').style.display = 'none';
             }
             
             if (currentUser.role === 'requester') {
-                document.querySelector('a[data-section="create"]').parentElement.style.display = 'list-item';
+                document.getElementById('create-nav').style.display = 'list-item';
             } else {
-                document.querySelector('a[data-section="create"]').parentElement.style.display = 'none';
+                document.getElementById('create-nav').style.display = 'none';
             }
+        }
+
+        // Load requests
+        async function loadRequests() {
+            try {
+                const response = await fetch('/api/requests');
+                if (response.ok) {
+                    const requests = await response.json();
+                    displayRequests(requests, document.querySelector('#requests .posts-grid'));
+                }
+            } catch (error) {
+                console.error('Error loading requests:', error);
+            }
+        }
+
+        // Load dashboard
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/requests/user');
+                if (response.ok) {
+                    const requests = await response.json();
+                    displayRequests(requests, document.querySelector('#dashboard .posts-grid'));
+                    
+                    // Update dashboard stats
+                    document.querySelector('#dashboard .dashboard-card:nth-child(1) p').textContent = 
+                        `${requests.filter(r => r.status === 'open').length} Active`;
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Load admin dashboard
+        async function loadAdminDashboard() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    
+                    // Update admin stats
+                    document.querySelector('#admin .dashboard-card:nth-child(2) p').textContent = 
+                        `${stats.activeUsers} Users`;
+                    document.querySelector('#admin .dashboard-card:nth-child(3) p').textContent = 
+                        `${stats.pendingRequests} Requests`;
+                }
+
+                // Load all requests for admin
+                const requestsResponse = await fetch('/api/requests');
+                if (requestsResponse.ok) {
+                    const requests = await requestsResponse.json();
+                    displayRequests(requests, document.querySelector('#admin .posts-grid'));
+                }
+            } catch (error) {
+                console.error('Error loading admin dashboard:', error);
+            }
+        }
+
+        // Display requests in a grid
+        function displayRequests(requests, container) {
+            if (!container) return;
+
+            if (requests.length === 0) {
+                container.innerHTML = '<p>No requests found.</p>';
+                return;
+            }
+
+            container.innerHTML = requests.map(request => {
+                const statusClass = request.status === 'open' ? 'status-pending' : 
+                                   request.status === 'closed' ? 'status-completed' : 'status-urgent';
+                const urgencyText = request.urgency_level.charAt(0).toUpperCase() + request.urgency_level.slice(1);
+                
+                return `
+                    <div class="post-card">
+                        <div class="post-image">
+                            <i class="fas fa-hands-helping fa-3x"></i>
+                        </div>
+                        <div class="post-content">
+                            <h3 class="post-title">${escapeHtml(request.title)}</h3>
+                            <div class="post-details">
+                                <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(request.location)}</span>
+                                <span><i class="fas fa-clock"></i> ${urgencyText}</span>
+                            </div>
+                            <p class="post-description">${escapeHtml(request.description)}</p>
+                            <span class="post-status ${statusClass}">${request.status}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Show error message
+        function showError(message) {
+            alert('Error: ' + message);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            alert(message);
         }
 
         // Close modals when clicking outside
@@ -1088,6 +1364,9 @@
             if (e.target === loginModal) loginModal.style.display = 'none';
             if (e.target === registerModal) registerModal.style.display = 'none';
         });
+
+        // Load initial data
+        loadRequests();
     </script>
 </body>
 </html>
