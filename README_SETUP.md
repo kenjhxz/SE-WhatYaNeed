@@ -166,7 +166,17 @@ npm test
 - SQL injection prevention with parameterized queries
 - XSS protection with HTML escaping
 - Role-based access control
-- CSRF protection via same-origin policy
+- CSRF protection via sameSite cookie policy
+- Secure cookies in production mode
+
+### Production Considerations
+
+For production deployment, consider adding:
+- Rate limiting middleware (e.g., express-rate-limit) to prevent brute force attacks
+- HTTPS/TLS encryption for secure communication
+- Additional input sanitization
+- Logging and monitoring
+- Regular security audits
 
 ## Troubleshooting
 

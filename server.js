@@ -11,7 +11,9 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
+
+// Serve only necessary static files (CSS, JS libraries from CDN are used in HTML)
+// Not serving entire directory to avoid exposing sensitive files
 
 // Session middleware
 app.use(session({
@@ -20,7 +22,9 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        httpOnly: true
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        sameSite: 'strict' // CSRF protection
     }
 }));
 
