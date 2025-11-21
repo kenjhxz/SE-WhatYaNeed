@@ -1,4 +1,4 @@
-// WhatYaNeed - Frontend Application Logic - FIXED VERSION
+// WhatYaNeed - Frontend with SESSION FIX
 const API_URL = 'http://localhost:3000/api';
 
 let currentUser = null;
@@ -6,6 +6,8 @@ let allRequests = [];
 
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 WhatYaNeed Frontend Initialized');
+    console.log('📡 API URL:', API_URL);
     initializeEventListeners();
     checkAuthStatus();
     loadHomeRequests();
@@ -45,7 +47,6 @@ function initializeEventListeners() {
 
     logoutBtn.addEventListener('click', handleLogout);
 
-    // User type selection (for registration only)
     document.querySelectorAll('.user-type').forEach(type => {
         type.addEventListener('click', function() {
             const parent = this.parentElement;
@@ -75,6 +76,7 @@ function initializeEventListeners() {
 // ==================== AUTH FUNCTIONS ====================
 async function checkAuthStatus() {
     try {
+        console.log('🔍 Checking authentication status...');
         const response = await fetch(`${API_URL}/auth/me`, {
             credentials: 'include'
         });
@@ -83,13 +85,13 @@ async function checkAuthStatus() {
             const data = await response.json();
             currentUser = data.user;
             updateUIAfterLogin();
-            console.log('✓ Authenticated as:', currentUser.email);
+            console.log('✅ Authenticated as:', currentUser.email);
         } else {
             currentUser = null;
-            console.log('Not authenticated');
+            console.log('ℹ️  Not authenticated');
         }
     } catch (error) {
-        console.log('Auth check failed:', error);
+        console.log('ℹ️  Auth check failed:', error.message);
         currentUser = null;
     }
 }
@@ -101,11 +103,12 @@ async function handleLogin(e) {
     const password = document.getElementById('login-password').value;
     
     try {
-        console.log('Attempting login...');
+        console.log('🔐 Attempting login for:', email);
+        
         const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+            credentials: 'include', // CRITICAL!
             body: JSON.stringify({ email, password })
         });
 
@@ -113,7 +116,10 @@ async function handleLogin(e) {
         
         if (response.ok) {
             currentUser = data.user;
-            console.log('✓ Login successful:', currentUser);
+            console.log('✅ Login successful:', currentUser.email);
+            
+            // CRITICAL: Wait a moment for session to propagate
+            await new Promise(resolve => setTimeout(resolve, 100));
             
             updateUIAfterLogin();
             document.getElementById('login-modal').style.display = 'none';
@@ -122,17 +128,20 @@ async function handleLogin(e) {
             // Navigate based on role
             if (currentUser.role === 'requester') {
                 navigateToSection('requester-dashboard');
+                // WAIT before loading dashboard data
+                setTimeout(() => loadRequesterDashboard(), 200);
             } else if (currentUser.role === 'volunteer') {
                 navigateToSection('browse');
+                setTimeout(() => loadBrowseRequests(), 200);
             } else if (currentUser.role === 'admin') {
-                // Redirect to admin page
                 window.location.href = 'admin.html';
             }
         } else {
+            console.error('❌ Login failed:', data.error);
             alert(data.error || 'Login failed. Please check your credentials.');
         }
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('❌ Login error:', error);
         alert('Connection error. Make sure the backend server is running on http://localhost:3000');
     }
 }
@@ -158,6 +167,8 @@ async function handleRegister(e) {
     }
     
     try {
+        console.log('📝 Attempting registration for:', email);
+        
         const response = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -167,21 +178,25 @@ async function handleRegister(e) {
         const data = await response.json();
         
         if (response.ok) {
+            console.log('✅ Registration successful');
             alert('Registration successful! Please login with your credentials.');
             document.getElementById('register-modal').style.display = 'none';
             document.getElementById('login-modal').style.display = 'flex';
             document.getElementById('login-email').value = email;
         } else {
+            console.error('❌ Registration failed:', data.error);
             alert(data.error || 'Registration failed. Please try again.');
         }
     } catch (error) {
-        console.error('Registration error:', error);
+        console.error('❌ Registration error:', error);
         alert('Connection error. Please try again.');
     }
 }
 
 async function handleLogout() {
     try {
+        console.log('🚪 Logging out...');
+        
         await fetch(`${API_URL}/auth/logout`, {
             method: 'POST',
             credentials: 'include'
@@ -196,18 +211,20 @@ async function handleLogout() {
         document.getElementById('nav-my-requests').style.display = 'none';
         document.getElementById('nav-create').style.display = 'none';
         document.getElementById('nav-my-offers').style.display = 'none';
-        document.getElementById('nav-admin').style.display = 'none';
         
         navigateToSection('home');
+        console.log('✅ Logged out successfully');
         alert('You have been logged out successfully.');
     } catch (error) {
-        console.error('Logout error:', error);
+        console.error('❌ Logout error:', error);
         alert('Logout failed. Please try again.');
     }
 }
 
 // ==================== UI UPDATE FUNCTIONS ====================
 function updateUIAfterLogin() {
+    console.log('🎨 Updating UI for user:', currentUser.email);
+    
     document.getElementById('user-actions').style.display = 'none';
     document.getElementById('user-profile').style.display = 'flex';
     
@@ -222,7 +239,6 @@ function updateUIAfterLogin() {
     document.getElementById('nav-my-requests').style.display = 'none';
     document.getElementById('nav-create').style.display = 'none';
     document.getElementById('nav-my-offers').style.display = 'none';
-    document.getElementById('nav-admin').style.display = 'none';
     
     if (currentUser.role === 'requester') {
         document.getElementById('nav-my-requests').style.display = 'list-item';
@@ -230,13 +246,12 @@ function updateUIAfterLogin() {
     } else if (currentUser.role === 'volunteer') {
         document.getElementById('nav-browse').style.display = 'list-item';
         document.getElementById('nav-my-offers').style.display = 'list-item';
-    } else if (currentUser.role === 'admin') {
-        document.getElementById('nav-admin').style.display = 'list-item';
-        document.getElementById('nav-browse').style.display = 'list-item';
     }
 }
 
 function navigateToSection(sectionId) {
+    console.log('📄 Navigating to:', sectionId);
+    
     document.querySelectorAll('.page-section').forEach(section => {
         section.classList.remove('active-section');
     });
@@ -245,24 +260,34 @@ function navigateToSection(sectionId) {
     if (targetSection) {
         targetSection.classList.add('active-section');
         
-        if (sectionId === 'browse') loadBrowseRequests();
-        if (sectionId === 'requester-dashboard') loadRequesterDashboard();
-        if (sectionId === 'volunteer-dashboard') loadVolunteerDashboard();
+        // Load data with delay to ensure session is ready
+        if (sectionId === 'browse') {
+            setTimeout(() => loadBrowseRequests(), 100);
+        }
+        if (sectionId === 'requester-dashboard') {
+            setTimeout(() => loadRequesterDashboard(), 100);
+        }
+        if (sectionId === 'volunteer-dashboard') {
+            setTimeout(() => loadVolunteerDashboard(), 100);
+        }
     }
 }
 
 // ==================== REQUEST FUNCTIONS ====================
 async function loadHomeRequests() {
     try {
+        console.log('📥 Loading home requests...');
+        
         const response = await fetch(`${API_URL}/requests`);
         const data = await response.json();
         
         if (response.ok) {
             allRequests = data.requests;
             displayHomeRequests(data.requests.slice(0, 6));
+            console.log(`✅ Loaded ${data.requests.length} requests`);
         }
     } catch (error) {
-        console.error('Error loading requests:', error);
+        console.error('❌ Error loading requests:', error);
         document.getElementById('home-requests-grid').innerHTML = 
             '<p style="color: var(--warning);">Error loading requests. Server may be offline.</p>';
     }
@@ -281,6 +306,8 @@ function displayHomeRequests(requests) {
 
 async function loadBrowseRequests() {
     try {
+        console.log('📥 Loading browse requests...');
+        
         const response = await fetch(`${API_URL}/requests`);
         const data = await response.json();
         
@@ -288,7 +315,7 @@ async function loadBrowseRequests() {
             displayBrowseRequests(data.requests);
         }
     } catch (error) {
-        console.error('Error loading requests:', error);
+        console.error('❌ Error loading requests:', error);
     }
 }
 
@@ -326,28 +353,37 @@ async function handleCreateRequest(e) {
     const urgency_level = document.getElementById('request-urgency').value;
     const location = document.getElementById('request-location').value;
     
-    console.log('Submitting request with session...');
+    console.log('📤 Creating request...');
     
     try {
         const response = await fetch(`${API_URL}/requests`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+            credentials: 'include', // CRITICAL!
             body: JSON.stringify({ title, description, category, urgency_level, location })
         });
 
         const data = await response.json();
         
         if (response.ok) {
+            console.log('✅ Request created:', data.request_id);
             alert('Request created successfully!');
             document.getElementById('request-form').reset();
             navigateToSection('requester-dashboard');
+            setTimeout(() => loadRequesterDashboard(), 200);
         } else {
-            console.error('Request creation failed:', data);
-            alert(data.error || 'Failed to create request. Please try logging in again.');
+            console.error('❌ Request creation failed:', data);
+            
+            if (response.status === 401) {
+                alert('Session expired. Please login again.');
+                currentUser = null;
+                updateUIAfterLogin();
+            } else {
+                alert(data.error || 'Failed to create request.');
+            }
         }
     } catch (error) {
-        console.error('Error creating request:', error);
+        console.error('❌ Error creating request:', error);
         alert('Connection error. Please try again.');
     }
 }
@@ -364,24 +400,33 @@ async function handleOfferHelp(requestId) {
         return;
     }
     
+    console.log('🤝 Offering help for request:', requestId);
+    
     try {
         const response = await fetch(`${API_URL}/offers`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+            credentials: 'include', // CRITICAL!
             body: JSON.stringify({ request_id: requestId })
         });
 
         const data = await response.json();
         
         if (response.ok) {
+            console.log('✅ Offer submitted');
             alert('Your help offer has been submitted successfully!');
             loadBrowseRequests();
         } else {
-            alert(data.error || 'Failed to submit offer.');
+            if (response.status === 401) {
+                alert('Session expired. Please login again.');
+                currentUser = null;
+                document.getElementById('login-modal').style.display = 'flex';
+            } else {
+                alert(data.error || 'Failed to submit offer.');
+            }
         }
     } catch (error) {
-        console.error('Error submitting offer:', error);
+        console.error('❌ Error submitting offer:', error);
         alert('Connection error. Please try again.');
     }
 }
@@ -390,21 +435,28 @@ async function handleOfferHelp(requestId) {
 async function loadRequesterDashboard() {
     if (!currentUser || currentUser.role !== 'requester') return;
     
+    console.log('📊 Loading requester dashboard...');
+    
     try {
         const response = await fetch(`${API_URL}/requester/requests`, {
             credentials: 'include'
         });
         
-        const data = await response.json();
-        
         if (response.ok) {
+            const data = await response.json();
             displayRequesterRequests(data.requests);
             loadRequesterStats(data.requests);
+        } else if (response.status === 401) {
+            console.error('❌ Session expired');
+            alert('Session expired. Please login again.');
+            currentUser = null;
+            navigateToSection('home');
         }
     } catch (error) {
-        console.error('Error loading requester dashboard:', error);
+        console.error('❌ Error loading requester dashboard:', error);
     }
     
+    // Load notifications without blocking
     loadNotifications('requester-notifications');
 }
 
@@ -446,19 +498,25 @@ function loadRequesterStats(requests) {
 async function loadVolunteerDashboard() {
     if (!currentUser || currentUser.role !== 'volunteer') return;
     
+    console.log('📊 Loading volunteer dashboard...');
+    
     try {
         const response = await fetch(`${API_URL}/volunteer/offers`, {
             credentials: 'include'
         });
         
-        const data = await response.json();
-        
         if (response.ok) {
+            const data = await response.json();
             displayVolunteerOffers(data.offers);
             loadVolunteerStats(data.offers);
+        } else if (response.status === 401) {
+            console.error('❌ Session expired');
+            alert('Session expired. Please login again.');
+            currentUser = null;
+            navigateToSection('home');
         }
     } catch (error) {
-        console.error('Error loading volunteer dashboard:', error);
+        console.error('❌ Error loading volunteer dashboard:', error);
     }
     
     loadNotifications('volunteer-notifications');
@@ -498,28 +556,39 @@ function loadVolunteerStats(offers) {
     `;
 }
 
+// FIXED: Don't fail if notifications return empty
 async function loadNotifications(containerId) {
     try {
         const response = await fetch(`${API_URL}/notifications`, {
             credentials: 'include'
         });
         
-        const data = await response.json();
         const container = document.getElementById(containerId);
         
-        if (response.ok && data.notifications.length > 0) {
-            container.innerHTML = data.notifications.map(notif => `
-                <div class="notification">
-                    <h4><i class="fas fa-bell"></i> Notification</h4>
-                    <p>${notif.message}</p>
-                    <small>${new Date(notif.sent_date).toLocaleString()}</small>
-                </div>
-            `).join('');
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.notifications && data.notifications.length > 0) {
+                container.innerHTML = data.notifications.map(notif => `
+                    <div class="notification">
+                        <h4><i class="fas fa-bell"></i> Notification</h4>
+                        <p>${notif.message}</p>
+                        <small>${new Date(notif.sent_date).toLocaleString()}</small>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p>No notifications yet.</p>';
+            }
         } else {
-            container.innerHTML = '<p>No notifications yet.</p>';
+            // Don't show error for notifications
+            container.innerHTML = '<p>No notifications available.</p>';
         }
     } catch (error) {
-        console.error('Error loading notifications:', error);
+        console.log('ℹ️  Could not load notifications (non-critical)');
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.innerHTML = '<p>No notifications available.</p>';
+        }
     }
 }
 
@@ -606,6 +675,7 @@ function getCategoryIcon(category) {
         'Groceries': 'shopping-cart',
         'Transportation': 'car',
         'Technology': 'laptop',
+        'Errand': 'running',
         'Other': 'hand-holding-heart'
     };
     return icons[category] || 'hand-holding-heart';
