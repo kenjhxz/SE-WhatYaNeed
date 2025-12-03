@@ -1454,6 +1454,18 @@
             const newName = document.getElementById('update-name').value;
             const newEmail = document.getElementById('update-email').value;
             
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(newEmail)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            if (!newName.trim()) {
+                alert('Please enter your name.');
+                return;
+            }
+            
             if (currentUser) {
                 currentUser.name = newName;
                 currentUser.email = newEmail;
@@ -1487,7 +1499,8 @@
                 return;
             }
             
-            // In a real app, this would verify current password and update on server
+            // Note: In a real application, current password should be verified against stored password
+            // and new password should be sent to server for secure storage
             alert('Password changed successfully!');
             this.reset();
         });
