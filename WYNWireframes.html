@@ -491,6 +491,7 @@
             display: flex;
             align-items: center;
             color: white;
+            position: relative;
         }
 
         .user-avatar {
@@ -501,18 +502,113 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 0.75rem;
             font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .user-avatar:hover {
+            background-color: #3aa5c7;
+            transform: scale(1.05);
         }
 
         .user-info {
             display: flex;
             flex-direction: column;
+            margin-left: 0.75rem;
+            cursor: pointer;
         }
 
         .user-role {
             font-size: 0.8rem;
             opacity: 0.8;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .profile-dropdown.active {
+            display: block;
+            animation: dropdownSlide 0.2s ease;
+        }
+
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .profile-dropdown-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+            background-color: #f8f9fa;
+        }
+
+        .profile-dropdown-header .user-name {
+            font-weight: 600;
+            color: var(--dark);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-dropdown-header .user-email {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .profile-dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--dark);
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+        }
+
+        .profile-dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .profile-dropdown-item i {
+            margin-right: 0.75rem;
+            width: 20px;
+            color: var(--primary);
+        }
+
+        .profile-dropdown-divider {
+            height: 1px;
+            background-color: var(--light-gray);
+            margin: 0.25rem 0;
+        }
+
+        .profile-dropdown-item.logout {
+            color: var(--warning);
+        }
+
+        .profile-dropdown-item.logout i {
+            color: var(--warning);
         }
     </style>
 </head>
@@ -539,11 +635,29 @@
                 </div>
                 <div class="user-profile" id="user-profile" style="display: none;">
                     <div class="user-avatar" id="user-avatar">JD</div>
-                    <div class="user-info">
+                    <div class="user-info" id="user-info">
                         <span id="user-name">John Doe</span>
                         <span class="user-role" id="user-role">Volunteer</span>
                     </div>
-                    <button class="btn btn-outline" id="logout-btn" style="margin-left: 1rem;">Logout</button>
+                    <div class="profile-dropdown" id="profile-dropdown">
+                        <div class="profile-dropdown-header">
+                            <span class="user-name" id="dropdown-user-name">John Doe</span>
+                            <span class="user-email" id="dropdown-user-email">user@example.com</span>
+                        </div>
+                        <a href="#" class="profile-dropdown-item" data-section="view-profile">
+                            <i class="fas fa-user"></i>
+                            View Profile
+                        </a>
+                        <a href="#" class="profile-dropdown-item" data-section="manage-account">
+                            <i class="fas fa-cog"></i>
+                            Manage Account
+                        </a>
+                        <div class="profile-dropdown-divider"></div>
+                        <button class="profile-dropdown-item logout" id="dropdown-logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -782,6 +896,117 @@
                 </div>
             </section>
 
+            <!-- View Profile Section -->
+            <section id="view-profile" class="page-section">
+                <div class="form-container" style="max-width: 800px;">
+                    <h2 class="form-title">My Profile</h2>
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div class="user-avatar" id="profile-page-avatar" style="width: 100px; height: 100px; font-size: 2.5rem; margin: 0 auto 1rem;">JD</div>
+                        <h3 id="profile-page-name" style="margin-bottom: 0.5rem;">John Doe</h3>
+                        <p id="profile-page-role" style="color: var(--gray); text-transform: capitalize;">Volunteer</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                        <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                                <i class="fas fa-envelope" style="color: var(--primary); margin-right: 0.75rem; font-size: 1.25rem;"></i>
+                                <div>
+                                    <div style="font-size: 0.85rem; color: var(--gray);">Email</div>
+                                    <div id="profile-page-email" style="font-weight: 500;">user@example.com</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                                <i class="fas fa-calendar-alt" style="color: var(--primary); margin-right: 0.75rem; font-size: 1.25rem;"></i>
+                                <div>
+                                    <div style="font-size: 0.85rem; color: var(--gray);">Member Since</div>
+                                    <div id="profile-page-joined" style="font-weight: 500;">January 2024</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Activity Stats</h3>
+                    <div class="dashboard-cards">
+                        <div class="dashboard-card">
+                            <i class="fas fa-tasks"></i>
+                            <h3 id="profile-requests-count">5</h3>
+                            <p>Total Requests</p>
+                        </div>
+                        <div class="dashboard-card">
+                            <i class="fas fa-check-circle"></i>
+                            <h3 id="profile-completed-count">12</h3>
+                            <p>Completed</p>
+                        </div>
+                        <div class="dashboard-card">
+                            <i class="fas fa-star"></i>
+                            <h3 id="profile-rating">4.8/5</h3>
+                            <p>Rating</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Manage Account Section -->
+            <section id="manage-account" class="page-section">
+                <div class="form-container" style="max-width: 800px;">
+                    <h2 class="form-title">Manage Account</h2>
+                    
+                    <h3 style="margin-bottom: 1rem;">Profile Information</h3>
+                    <form id="update-profile-form">
+                        <div class="form-group">
+                            <label for="update-name">Full Name</label>
+                            <input type="text" id="update-name" placeholder="Your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="update-email">Email</label>
+                            <input type="email" id="update-email" placeholder="Your email address">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+
+                    <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--light-gray);">
+
+                    <h3 style="margin-bottom: 1rem;">Change Password</h3>
+                    <form id="change-password-form">
+                        <div class="form-group">
+                            <label for="current-password">Current Password</label>
+                            <input type="password" id="current-password" placeholder="Enter current password">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">New Password</label>
+                            <input type="password" id="new-password" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-new-password">Confirm New Password</label>
+                            <input type="password" id="confirm-new-password" placeholder="Confirm new password">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                    </form>
+
+                    <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--light-gray);">
+
+                    <h3 style="margin-bottom: 1rem;">Notification Preferences</h3>
+                    <form id="notification-preferences-form">
+                        <div class="form-group" style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <input type="checkbox" id="email-notifications" style="width: auto; margin-right: 0.75rem;" checked>
+                            <label for="email-notifications" style="margin-bottom: 0;">Email notifications for new offers</label>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <input type="checkbox" id="request-updates" style="width: auto; margin-right: 0.75rem;" checked>
+                            <label for="request-updates" style="margin-bottom: 0;">Updates on my requests</label>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <input type="checkbox" id="weekly-digest" style="width: auto; margin-right: 0.75rem;">
+                            <label for="weekly-digest" style="margin-bottom: 0;">Weekly digest of new requests</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Preferences</button>
+                    </form>
+                </div>
+            </section>
+
             <!-- Admin Section -->
             <section id="admin" class="page-section">
                 <h2>Admin Dashboard</h2>
@@ -929,6 +1154,38 @@
         // Current user state
         let currentUser = null;
 
+        // Session management functions
+        function saveSession(user) {
+            localStorage.setItem('whatyaneed_user', JSON.stringify(user));
+        }
+
+        function restoreSession() {
+            const savedUser = localStorage.getItem('whatyaneed_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    updateUIAfterLogin();
+                    return true;
+                } catch (e) {
+                    console.error('Error restoring session:', e);
+                    localStorage.removeItem('whatyaneed_user');
+                }
+            }
+            return false;
+        }
+
+        function clearSession() {
+            localStorage.removeItem('whatyaneed_user');
+            currentUser = null;
+        }
+
+        function validateSession() {
+            if (!currentUser) {
+                return restoreSession();
+            }
+            return true;
+        }
+
         // DOM Elements
         const loginModal = document.getElementById('login-modal');
         const registerModal = document.getElementById('register-modal');
@@ -945,9 +1202,11 @@
         const userName = document.getElementById('user-name');
         const userRole = document.getElementById('user-role');
         const userAvatar = document.getElementById('user-avatar');
-        const logoutBtn = document.getElementById('logout-btn');
         const userTypes = document.querySelectorAll('.user-type');
         const mainNav = document.getElementById('main-nav');
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const dropdownLogoutBtn = document.getElementById('dropdown-logout-btn');
+        const userInfo = document.getElementById('user-info');
 
         // Event Listeners
         loginBtn.addEventListener('click', () => loginModal.style.display = 'flex');
@@ -964,7 +1223,20 @@
             registerModal.style.display = 'none';
             loginModal.style.display = 'flex';
         });
-        logoutBtn.addEventListener('click', logout);
+        
+        // Logout button is now in dropdown
+        dropdownLogoutBtn.addEventListener('click', logout);
+
+        // Profile dropdown toggle
+        userAvatar.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
+
+        userInfo.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
 
         // User type selection
         userTypes.forEach(type => {
@@ -1016,9 +1288,57 @@
             });
         });
 
+        // Profile dropdown navigation
+        document.querySelectorAll('.profile-dropdown-item[data-section]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetSection = this.getAttribute('data-section');
+                
+                // Hide dropdown
+                profileDropdown.classList.remove('active');
+                
+                // Hide all sections
+                document.querySelectorAll('.page-section').forEach(section => {
+                    section.classList.remove('active-section');
+                });
+                
+                // Show target section
+                document.getElementById(targetSection).classList.add('active-section');
+                
+                // Update profile page data
+                updateProfilePageData();
+            });
+        });
+
         // Request form submission
         document.getElementById('request-form').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Check if user is logged in
+            if (!validateSession()) {
+                alert('You must be logged in to create a request. Please log in first.');
+                loginModal.style.display = 'flex';
+                return;
+            }
+            
+            // Check if user has requester role
+            if (currentUser.role !== 'requester') {
+                alert('Only requesters can create requests. Your current role is: ' + currentUser.role);
+                return;
+            }
+            
+            // Validate form fields
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const category = document.getElementById('category').value;
+            const urgency = document.getElementById('urgency').value;
+            const address = document.getElementById('address').value;
+            
+            if (!title || !description || category === 'Select a category' || urgency === 'Select urgency level' || !address) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
             alert('Request submitted successfully!');
             this.reset();
         });
@@ -1029,6 +1349,7 @@
             
             if (user) {
                 currentUser = user;
+                saveSession(user);
                 updateUIAfterLogin();
                 loginModal.style.display = 'none';
                 alert(`Welcome back, ${user.name}!`);
@@ -1055,9 +1376,26 @@
 
         // Logout function
         function logout() {
-            currentUser = null;
+            clearSession();
             userActions.style.display = 'flex';
             userProfile.style.display = 'none';
+            
+            // Reset navigation visibility
+            const createLink = document.querySelector('a[data-section="create"]');
+            if (createLink && createLink.parentElement) {
+                createLink.parentElement.style.display = 'none';
+            }
+            const adminLink = document.querySelector('a[data-section="admin"]');
+            if (adminLink && adminLink.parentElement) {
+                adminLink.parentElement.style.display = 'none';
+            }
+            
+            // Navigate to home
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active-section');
+            });
+            document.getElementById('home').classList.add('active-section');
+            
             alert('You have been logged out.');
         }
 
@@ -1069,24 +1407,123 @@
             userRole.textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
             userAvatar.textContent = currentUser.avatar;
             
+            // Update dropdown header
+            document.getElementById('dropdown-user-name').textContent = currentUser.name;
+            document.getElementById('dropdown-user-email').textContent = currentUser.email;
+            
             // Show/hide navigation based on role
-            if (currentUser.role === 'admin') {
-                document.querySelector('a[data-section="admin"]').parentElement.style.display = 'list-item';
-            } else {
-                document.querySelector('a[data-section="admin"]').parentElement.style.display = 'none';
+            const adminLink = document.querySelector('a[data-section="admin"]');
+            if (adminLink) {
+                if (currentUser.role === 'admin') {
+                    adminLink.parentElement.style.display = 'list-item';
+                } else {
+                    adminLink.parentElement.style.display = 'none';
+                }
             }
             
-            if (currentUser.role === 'requester') {
-                document.querySelector('a[data-section="create"]').parentElement.style.display = 'list-item';
-            } else {
-                document.querySelector('a[data-section="create"]').parentElement.style.display = 'none';
+            const createLink = document.querySelector('a[data-section="create"]');
+            if (createLink) {
+                if (currentUser.role === 'requester') {
+                    createLink.parentElement.style.display = 'list-item';
+                } else {
+                    createLink.parentElement.style.display = 'none';
+                }
             }
         }
+
+        // Update profile page data
+        function updateProfilePageData() {
+            if (!currentUser) return;
+            
+            document.getElementById('profile-page-avatar').textContent = currentUser.avatar;
+            document.getElementById('profile-page-name').textContent = currentUser.name;
+            document.getElementById('profile-page-role').textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+            document.getElementById('profile-page-email').textContent = currentUser.email;
+            document.getElementById('profile-page-joined').textContent = 'January 2024';
+            
+            // Update manage account form
+            document.getElementById('update-name').value = currentUser.name;
+            document.getElementById('update-email').value = currentUser.email;
+        }
+
+        // Profile update form
+        document.getElementById('update-profile-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newName = document.getElementById('update-name').value;
+            const newEmail = document.getElementById('update-email').value;
+            
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(newEmail)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            if (!newName.trim()) {
+                alert('Please enter your name.');
+                return;
+            }
+            
+            if (currentUser) {
+                currentUser.name = newName;
+                currentUser.email = newEmail;
+                saveSession(currentUser);
+                updateUIAfterLogin();
+                updateProfilePageData();
+                alert('Profile updated successfully!');
+            }
+        });
+
+        // Change password form
+        document.getElementById('change-password-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-new-password').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('Please fill in all password fields.');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match!');
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                alert('New password must be at least 8 characters long.');
+                return;
+            }
+            
+            // Note: In a real application, current password should be verified against stored password
+            // and new password should be sent to server for secure storage
+            alert('Password changed successfully!');
+            this.reset();
+        });
+
+        // Notification preferences form
+        document.getElementById('notification-preferences-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Notification preferences saved successfully!');
+        });
 
         // Close modals when clicking outside
         window.addEventListener('click', function(e) {
             if (e.target === loginModal) loginModal.style.display = 'none';
             if (e.target === registerModal) registerModal.style.display = 'none';
+            
+            // Close profile dropdown when clicking outside
+            if (!userProfile.contains(e.target)) {
+                profileDropdown.classList.remove('active');
+            }
+        });
+
+        // Restore session on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            restoreSession();
         });
     </script>
 </body>
