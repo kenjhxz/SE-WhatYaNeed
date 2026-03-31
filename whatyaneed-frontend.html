@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WhatYaNeed - Community Needs Board</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="whatyaneed-frontend.css">
+    <link rel="stylesheet" href="chatbox.css">
+    <link rel="stylesheet" href="location-map.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
+
 <body>
     <header>
         <div class="container">
@@ -18,10 +24,14 @@
                 <nav id="main-nav">
                     <ul id="nav-menu">
                         <li><a href="#" class="nav-link" data-section="home">Home</a></li>
-                        <li style="display: none;" id="nav-browse"><a href="#" class="nav-link" data-section="browse">Browse Requests</a></li>
-                        <li style="display: none;" id="nav-my-requests"><a href="#" class="nav-link" data-section="requester-dashboard">My Requests</a></li>
-                        <li style="display: none;" id="nav-create"><a href="#" class="nav-link" data-section="create">Create Request</a></li>
-                        <li style="display: none;" id="nav-my-offers"><a href="#" class="nav-link" data-section="volunteer-dashboard">My Offers</a></li>
+                        <li style="display: none;" id="nav-browse"><a href="#" class="nav-link"
+                                data-section="browse">Browse Requests</a></li>
+                        <li style="display: none;" id="nav-my-requests"><a href="#" class="nav-link"
+                                data-section="requester-dashboard">My Requests</a></li>
+                        <li style="display: none;" id="nav-create"><a href="#" class="nav-link"
+                                data-section="create">Create Request</a></li>
+                        <li style="display: none;" id="nav-my-offers"><a href="#" class="nav-link"
+                                data-section="volunteer-dashboard">My Offers</a></li>
                     </ul>
                 </nav>
                 <div class="user-actions" id="user-actions">
@@ -29,12 +39,43 @@
                     <button class="btn btn-primary" id="register-btn">Register</button>
                 </div>
                 <div class="user-profile" id="user-profile" style="display: none;">
-                    <div class="user-avatar" id="user-avatar">JD</div>
-                    <div class="user-info">
-                        <span id="user-name">John Doe</span>
-                        <span class="user-role" id="user-role">Volunteer</span>
+                    <!-- Notification Bell -->
+                    <div class="notification-bell" id="notification-bell">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+                        <div class="notification-dropdown" id="notification-dropdown">
+                            <div class="notification-header">
+                                <h4>Notifications</h4>
+                            </div>
+                            <div class="notification-list" id="notification-list">
+                                <p class="no-notifications">No new notifications</p>
+                            </div>
+                        </div>
                     </div>
-                    <button class="btn btn-outline" id="logout-btn" style="margin-left: 1rem;">Logout</button>
+
+                    <!-- Profile Dropdown Trigger -->
+                    <div class="profile-trigger" id="profile-trigger">
+                        <div class="user-avatar" id="user-avatar">JD</div>
+                        <div class="user-info">
+                            <span id="user-name">John Doe</span>
+                            <span class="user-role" id="user-role">Volunteer</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+
+                    <!-- Profile Dropdown Menu -->
+                    <div class="profile-dropdown" id="profile-dropdown">
+                        <a href="#" class="dropdown-item" id="view-profile-link">
+                            <i class="fas fa-user"></i> View Profile
+                        </a>
+                        <a href="#" class="dropdown-item" id="manage-account-link">
+                            <i class="fas fa-cog"></i> Manage Account
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logout-link">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -42,11 +83,12 @@
 
     <main class="main-content">
         <div class="container">
-            <!-- Home Section -->
+            
             <section id="home" class="page-section active-section">
                 <div class="hero">
                     <h1>Connecting Community Needs with Helpers</h1>
-                    <p>WhatYaNeed is a platform where community members can request help and volunteers can offer assistance for various needs.</p>
+                    <p>WhatYaNeed is a platform where community members can request help and volunteers can offer
+                        assistance for various needs.</p>
                     <div class="search-bar">
                         <input type="text" placeholder="Search for requests..." id="home-search">
                         <button id="home-search-btn"><i class="fas fa-search"></i> Search</button>
@@ -59,7 +101,7 @@
                 </div>
             </section>
 
-            <!-- Browse Requests Section -->
+            
             <section id="browse" class="page-section">
                 <h2>Browse Available Requests</h2>
                 <div class="posts-grid" id="browse-requests-grid">
@@ -106,7 +148,8 @@
                         </div>
                         <div class="form-group">
                             <label for="request-description">Description *</label>
-                            <textarea id="request-description" placeholder="Please describe your request in detail..." required></textarea>
+                            <textarea id="request-description" placeholder="Please describe your request in detail..."
+                                required></textarea>
                         </div>
                         <div class="form-group">
                             <label for="request-category">Category *</label>
@@ -136,6 +179,126 @@
                     </form>
                 </div>
             </section>
+
+            <!-- View Profile Section -->
+            <section id="view-profile" class="page-section">
+                <div class="profile-container">
+                    <div class="profile-header">
+                        <div class="profile-avatar-large" id="profile-avatar-large">JD</div>
+                        <h2 id="profile-display-name">John Doe</h2>
+                        <span class="profile-role-badge" id="profile-role-badge">Volunteer</span>
+                    </div>
+                    <div class="profile-card">
+                        <h3>Profile Information</h3>
+                        <div class="profile-info-grid">
+                            <div class="profile-info-item">
+                                <label>Full Name</label>
+                                <p id="profile-info-name">John Doe</p>
+                            </div>
+                            <div class="profile-info-item">
+                                <label>Email</label>
+                                <p id="profile-info-email">john@example.com</p>
+                            </div>
+                            <div class="profile-info-item">
+                                <label>Role</label>
+                                <p id="profile-info-role">Volunteer</p>
+                            </div>
+                            <div class="profile-info-item">
+                                <label>Location</label>
+                                <p id="profile-info-location">Not specified</p>
+                            </div>
+                            <div class="profile-info-item">
+                                <label>Account Status</label>
+                                <p id="profile-info-status">Active</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="goto-manage-account" style="margin-top: 1.5rem;">
+                            <i class="fas fa-cog"></i> Manage Account
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Manage Account Section -->
+            <section id="manage-account" class="page-section">
+                <div class="form-container" style="max-width: 800px;">
+                    <h2 class="form-title">Manage Account</h2>
+
+                    <!-- Update Profile Section -->
+                    <div class="account-section">
+                        <h3><i class="fas fa-user-edit"></i> Update Profile</h3>
+                        <form id="update-profile-form">
+                            <div class="form-group">
+                                <label for="profile-name">Full Name *</label>
+                                <input type="text" id="profile-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-location">Location</label>
+                                <input type="text" id="profile-location" placeholder="Your city or area">
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Change Password Section -->
+                    <div class="account-section">
+                        <h3><i class="fas fa-lock"></i> Change Password</h3>
+                        <form id="change-password-form">
+                            <div class="form-group">
+                                <label for="current-password">Current Password *</label>
+                                <input type="password" id="current-password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-password">New Password *</label>
+                                <input type="password" id="new-password" required minlength="6">
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm-new-password">Confirm New Password *</label>
+                                <input type="password" id="confirm-new-password" required minlength="6">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key"></i> Update Password
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Profile Image Upload Section -->
+                    <div class="account-section">
+                        <h3><i class="fas fa-image"></i> Profile Image</h3>
+                        <div class="profile-image-upload">
+                            <div class="image-preview" id="image-preview">
+                                <div class="avatar-preview" id="avatar-preview">JD</div>
+                            </div>
+                            <div class="upload-controls">
+                                <input type="file" id="profile-image-input" accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-outline" id="select-image-btn">
+                                    <i class="fas fa-upload"></i> Choose Image
+                                </button>
+                                <button type="button" class="btn btn-primary" id="upload-image-btn" disabled>
+                                    <i class="fas fa-check"></i> Upload
+                                </button>
+                                <p class="upload-hint">Max size: 2MB. Formats: JPG, PNG, GIF</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Switch Role Section -->
+                    <div class="account-section">
+                        <h3><i class="fas fa-exchange-alt"></i> Switch Role</h3>
+                        <p>Switch between Requester and Volunteer roles. Note: You can only switch once every 24 hours.
+                        </p>
+                        <div class="role-switch-info">
+                            <p><strong>Current Role:</strong> <span id="current-role-display">Volunteer</span></p>
+                            <p id="cooldown-message" style="display: none; color: var(--warning);"></p>
+                        </div>
+                        <button type="button" class="btn btn-warning" id="switch-role-btn">
+                            <i class="fas fa-exchange-alt"></i> Switch to <span id="target-role">Requester</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 
@@ -155,7 +318,8 @@
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
                 <p style="text-align: center; margin-top: 1rem;">
-                    Don't have an account? <a href="#" id="switch-to-register" style="color: var(--primary);">Register now</a>
+                    Don't have an account? <a href="#" id="switch-to-register" style="color: var(--primary);">Register
+                        now</a>
                 </p>
             </form>
         </div>
@@ -185,17 +349,31 @@
                 </div>
                 <div class="form-group">
                     <label for="register-password">Password *</label>
-                    <input type="password" id="register-password" required placeholder="Create a password (min 6 characters)" minlength="6">
+                    <input type="password" id="register-password" required
+                        placeholder="Create a password (min 6 characters)" minlength="6">
                 </div>
                 <div class="form-group">
                     <label for="register-confirm">Confirm Password *</label>
-                    <input type="password" id="register-confirm" required placeholder="Confirm your password" minlength="6">
+                    <input type="password" id="register-confirm" required placeholder="Confirm your password"
+                        minlength="6">
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
                 <p style="text-align: center; margin-top: 1rem;">
-                    Already have an account? <a href="#" id="switch-to-login" style="color: var(--primary);">Login now</a>
+                    Already have an account? <a href="#" id="switch-to-login" style="color: var(--primary);">Login
+                        now</a>
                 </p>
             </form>
+        </div>
+    </div>
+
+    <!-- View Offers Modal -->
+    <div class="modal" id="offers-modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close-modal" id="close-offers">&times;</span>
+            <h2 class="form-title" id="offers-modal-title">Offers for Request</h2>
+            <div id="offers-list" class="offers-list">
+                <p>Loading offers...</p>
+            </div>
         </div>
     </div>
 
@@ -214,7 +392,7 @@
                         <li><a href="#">FAQ</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-2section">
                     <h3>Contact Us</h3>
                     <ul>
                         <li><a href="#"><i class="fas fa-envelope"></i> support@whatyaneed.com</a></li>
@@ -227,6 +405,90 @@
         </div>
     </footer>
 
+    <!-- Chatbox Modal for Request-Volunteer Communication -->
+    <div class="chatbox-modal" id="chatbox-modal" style="display: none;">
+        <div class="chatbox-container">
+            <div class="chatbox-header">
+                <div class="chatbox-title">
+                    <i class="fas fa-comments"></i>
+                    <span id="chatbox-title">Chat</span>
+                </div>
+                <button class="chatbox-close" id="chatbox-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="chatbox-messages" id="chatbox-messages">
+                <div class="chatbox-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading messages...</p>
+                </div>
+            </div>
+
+            <div class="chatbox-input-container">
+                <input type="text" id="chatbox-input" class="chatbox-input" placeholder="Type your message..."
+                    maxlength="500">
+                <button id="chatbox-send" class="chatbox-send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Map Modal for Displaying Volunteer Location -->
+    <div class="location-map-modal" id="location-map-modal" style="display: none;">
+        <div class="location-map-container">
+            <div class="location-map-header">
+                <div class="location-map-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Volunteer Location</span>
+                </div>
+                <button class="location-map-close" id="location-map-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="location-map-content">
+                <div class="location-info" id="location-info">
+                    <div class="volunteer-info">
+                        <div class="volunteer-avatar" id="map-volunteer-avatar">V</div>
+                        <div class="volunteer-details">
+                            <h3 id="map-volunteer-name">Volunteer Name</h3>
+                            <p id="map-volunteer-status">
+                                <i class="fas fa-clock"></i>
+                                Location last updated: <span id="map-location-time">--</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="location-coordinates" id="location-coordinates">
+                        <p><i class="fas fa-map-pin"></i> Loading location...</p>
+                    </div>
+                </div>
+
+                <div class="map-display" id="map-display">
+                    <div class="map-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading map...</p>
+                    </div>
+                </div>
+
+                <div class="map-actions">
+                    <button class="btn btn-outline" id="refresh-location-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh Location
+                    </button>
+                    <button class="btn btn-primary" id="open-in-maps-btn" style="display: none;">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open in Google Maps
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="whatyaneed-frontend.js"></script>
+    <script src="chatbox.js"></script>
+    <script src="location-map.js"></script>
 </body>
+
 </html>

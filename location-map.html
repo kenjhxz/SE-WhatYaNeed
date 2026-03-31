@@ -1,0 +1,50 @@
+<div class="location-map-modal" id="location-map-modal" style="display: none;">
+    <div class="location-map-container">
+        <div class="location-map-header">
+            <div class="location-map-title">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Volunteer Location</span>
+            </div>
+            <button class="location-map-close" id="location-map-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="location-map-content">
+            <div class="location-info" id="location-info">
+                <div class="volunteer-info">
+                    <div class="volunteer-avatar" id="map-volunteer-avatar">V</div>
+                    <div class="volunteer-details">
+                        <h3 id="map-volunteer-name">Volunteer Name</h3>
+                        <p id="map-volunteer-status">
+                            <i class="fas fa-clock"></i>
+                            Location last updated: <span id="map-location-time">--</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="location-coordinates" id="location-coordinates">
+                    <p><i class="fas fa-map-pin"></i> Loading location...</p>
+                </div>
+            </div>
+            
+            <div class="map-display" id="map-display">
+                <div class="map-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading map...</p>
+                </div>
+            </div>
+            
+            <div class="map-actions">
+                <button class="btn btn-outline" id="refresh-location-btn">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Location
+                </button>
+                <button class="btn btn-primary" id="open-in-maps-btn" style="display: none;">
+                    <i class="fas fa-external-link-alt"></i>
+                    Open in Google Maps
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="error-div" style="display: none; color: red; font-weight: bold;"></div>

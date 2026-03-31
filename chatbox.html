@@ -1,0 +1,33 @@
+<div class="chatbox-modal" id="chatbox-modal" style="display: none;">
+    <div class="chatbox-container">
+        <div class="chatbox-header">
+            <div class="chatbox-title">
+                <i class="fas fa-comments"></i>
+                <span id="chatbox-title">Chat</span>
+            </div>
+            <button class="chatbox-close" id="chatbox-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="chatbox-messages" id="chatbox-messages">
+            <div class="chatbox-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading messages...</p>
+            </div>
+        </div>
+        
+        <div class="chatbox-input-container">
+            <input 
+                type="text" 
+                id="chatbox-input" 
+                class="chatbox-input" 
+                placeholder="Type your message..."
+                maxlength="500"
+            >
+            <button id="chatbox-send" class="chatbox-send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
