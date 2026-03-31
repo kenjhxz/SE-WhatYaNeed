@@ -1,0 +1,77 @@
+@startuml WhatYaNeed_Activity_Diagram
+
+title WhatYaNeed – Login Process Activity Diagram
+
+skinparam ActivityBackgroundColor #E8F5E9
+skinparam ActivityBorderColor #388E3C
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #F57F17
+skinparam ArrowColor #1565C0
+skinparam NoteBackgroundColor #E3F2FD
+skinparam NoteBorderColor #1565C0
+
+start
+
+:User opens WhatYaNeed in browser;
+:Home page loads with recent requests;
+:User clicks **Login** button;
+:Login modal opens;
+:User enters **email** and **password**;
+:User clicks **Submit**;
+
+note right
+  Frontend sends POST /api/auth/login
+  with JSON credentials (include cookies)
+end note
+
+:Frontend sends credentials\nto Node.js API Server;
+
+if (Are fields empty?) then (yes)
+  :Show validation error\n"Please fill all fields";
+  :Return to login form;
+  stop
+else (no)
+  :API Server queries MySQL\nfor user by email;
+  if (User record found?) then (no)
+    :Return 401 Unauthorized\n"Invalid credentials";
+    :Display error alert to user;
+    :User may retry or close modal;
+    stop
+  else (yes)
+    :Compare submitted password\nwith hashed password in DB;
+    if (Password matches?) then (no)
+      :Return 401 Unauthorized\n"Invalid credentials";
+      :Display error alert to user;
+      :User may retry or close modal;
+      stop
+    else (yes)
+      :Create server-side session\n(express-session / cookie);
+      :Return 200 OK with user object\n(id, name, email, role, location);
+      :Frontend stores currentUser in memory;
+      :Update navigation bar and header UI;
+
+      note right
+        Nav items shown depend on role:
+        Requester → My Requests, Create Request
+        Volunteer → Browse Requests, My Offers
+        Admin → Redirect to admin.html
+      end note
+
+      if (User role?) then (requester)
+        :Navigate to **Requester Dashboard**;
+        :Load user's active requests\nand notifications from API;
+      else if (User role?) then (volunteer)
+        :Navigate to **Browse Requests** page;
+        :Load all open requests from API;
+      else (admin)
+        :Redirect browser to **admin.html**;
+        :Load admin management panels;
+      endif
+
+      :User is successfully logged in\nand can interact with the platform;
+      stop
+    endif
+  endif
+endif
+
+@enduml

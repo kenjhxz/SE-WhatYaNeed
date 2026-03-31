@@ -1,0 +1,154 @@
+@startuml WhatYaNeed_Architecture_Diagram
+
+title WhatYaNeed – System Architecture Diagram
+
+skinparam rectangle {
+  BackgroundColor #E8F5E9
+  BorderColor #388E3C
+  FontColor #1B5E20
+}
+skinparam database {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  FontColor #0D47A1
+}
+skinparam cloud {
+  BackgroundColor #FFF9C4
+  BorderColor #F57F17
+}
+skinparam node {
+  BackgroundColor #FCE4EC
+  BorderColor #880E4F
+}
+skinparam ArrowColor #37474F
+skinparam NoteBackgroundColor #F3E5F5
+skinparam NoteBorderColor #7B1FA2
+
+' ─────────────────────────────────────────
+'  CLIENTS
+' ─────────────────────────────────────────
+package "Clients" {
+  actor "Requester\n(Browser)" as Requester
+  actor "Volunteer\n(Browser)"  as Volunteer
+  actor "Admin\n(Browser)"      as Admin
+}
+
+' ─────────────────────────────────────────
+'  CDN
+' ─────────────────────────────────────────
+cloud "CDN\n(Cloudflare / AWS CloudFront)" as CDN {
+  rectangle "Static Assets\n(HTML · CSS · JS · Images)" as StaticAssets
+}
+
+note right of CDN
+  Serves the WhatYaNeed
+  frontend files with low
+  latency worldwide
+end note
+
+' ─────────────────────────────────────────
+'  LOAD BALANCER
+' ─────────────────────────────────────────
+rectangle "Load Balancer\n(NGINX / AWS ALB)" as LB {
+}
+
+note right of LB
+  Distributes HTTPS traffic
+  across app servers using
+  round-robin algorithm
+end note
+
+' ─────────────────────────────────────────
+'  APPLICATION SERVERS
+' ─────────────────────────────────────────
+package "Application Layer" {
+
+  node "App Server 1\n(Node.js / Express)" as AppServer1 {
+    rectangle "Auth Service\n/api/auth/*" as AuthSvc1
+    rectangle "Request Service\n/api/requests/*" as ReqSvc1
+    rectangle "Notification Service\n/api/notifications/*" as NotifSvc1
+  }
+
+  node "App Server 2\n(Node.js / Express)" as AppServer2 {
+    rectangle "Auth Service\n/api/auth/*" as AuthSvc2
+    rectangle "Request Service\n/api/requests/*" as ReqSvc2
+    rectangle "Notification Service\n/api/notifications/*" as NotifSvc2
+  }
+
+}
+
+note right of AppServer2
+  Both servers run the same
+  Node.js application code.
+  Sessions are shared via Redis.
+end note
+
+' ─────────────────────────────────────────
+'  CACHE
+' ─────────────────────────────────────────
+database "Redis Cache\n(Session Store\n& Query Cache)" as Redis {
+}
+
+note right of Redis
+  Stores session data so
+  any app server can
+  validate user sessions.
+  Also caches popular
+  requests list queries.
+end note
+
+' ─────────────────────────────────────────
+'  DATABASE
+' ─────────────────────────────────────────
+database "MySQL Database\n(Primary)" as DBPrimary {
+  rectangle "users" as TblUsers
+  rectangle "requests" as TblRequests
+  rectangle "offers" as TblOffers
+  rectangle "notifications" as TblNotifs
+}
+
+database "MySQL Database\n(Read Replica)" as DBReplica {
+}
+
+note right of DBReplica
+  Read replica handles
+  SELECT queries, reducing
+  load on primary DB.
+end note
+
+' ─────────────────────────────────────────
+'  EXTERNAL APIs
+' ─────────────────────────────────────────
+cloud "External APIs" as ExtAPIs {
+  rectangle "Email API\n(e.g., SendGrid)" as EmailAPI
+  rectangle "Maps / Geolocation API\n(e.g., Google Maps)" as MapsAPI
+}
+
+' ─────────────────────────────────────────
+'  CONNECTIONS
+' ─────────────────────────────────────────
+
+Requester --> CDN     : HTTPS
+Volunteer --> CDN     : HTTPS
+Admin     --> CDN     : HTTPS
+
+CDN --> LB : API requests\n(pass-through)
+
+LB --> AppServer1 : Route traffic
+LB --> AppServer2 : Route traffic
+
+AppServer1 --> Redis      : Read/write sessions\n& cached data
+AppServer2 --> Redis      : Read/write sessions\n& cached data
+
+AppServer1 --> DBPrimary  : Writes (INSERT / UPDATE / DELETE)
+AppServer2 --> DBPrimary  : Writes (INSERT / UPDATE / DELETE)
+
+AppServer1 --> DBReplica  : Reads (SELECT)
+AppServer2 --> DBReplica  : Reads (SELECT)
+
+DBPrimary --> DBReplica   : Replication
+
+AppServer1 --> ExtAPIs : Send notifications\n& resolve location
+AppServer2 --> ExtAPIs : Send notifications\n& resolve location
+
+@enduml

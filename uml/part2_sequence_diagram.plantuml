@@ -1,0 +1,128 @@
+@startuml WhatYaNeed_Sequence_Diagram
+
+title WhatYaNeed – Login Process Sequence Diagram
+
+skinparam ParticipantBackgroundColor #E8F5E9
+skinparam ParticipantBorderColor #388E3C
+skinparam SequenceArrowColor #1565C0
+skinparam SequenceLifeLineBorderColor #388E3C
+skinparam NoteBackgroundColor #E3F2FD
+skinparam NoteBorderColor #1565C0
+skinparam SequenceGroupBackgroundColor #FFF9C4
+skinparam SequenceGroupBorderColor #F57F17
+
+actor       "User\n(Browser)"        as User
+participant "Frontend\n(HTML/JS/CSS)" as Frontend
+participant "Node.js\nAPI Server"     as API
+participant "Auth\nService"           as Auth
+database    "MySQL\nDatabase"         as DB
+
+== Page Load ==
+
+User -> Frontend : Open WhatYaNeed URL
+activate Frontend
+Frontend -> API : GET /api/auth/me (cookies)
+activate API
+API -> Auth : Verify session cookie
+activate Auth
+Auth --> API : Session not found / expired
+deactivate Auth
+API --> Frontend : 401 Not Authenticated
+deactivate API
+Frontend --> User : Render home page\n(Login / Register buttons visible)
+deactivate Frontend
+
+== Login Flow ==
+
+User -> Frontend : Click Login button
+activate Frontend
+Frontend --> User : Display login modal
+deactivate Frontend
+
+User -> Frontend : Enter email & password,\nclick Submit
+activate Frontend
+
+note over Frontend
+  Client-side validation:
+  - Fields must not be empty
+  - Email format check
+end note
+
+alt Validation fails
+  Frontend --> User : Show inline error message
+else Validation passes
+  Frontend -> API : POST /api/auth/login\n{ email, password }
+  activate API
+
+  API -> Auth : Process login request
+  activate Auth
+
+  Auth -> DB : SELECT * FROM users\nWHERE email = ?
+  activate DB
+  DB --> Auth : Return user row\n(id, name, email, password_hash, role)
+  deactivate DB
+
+  alt User not found
+    Auth --> API : User not found
+    API --> Frontend : 401 { error: "Invalid credentials" }
+    Frontend --> User : Alert: "Invalid credentials"
+  else User found
+    Auth -> Auth : bcrypt.compare(\n  submitted_password,\n  stored_hash\n)
+
+    alt Password does not match
+      Auth --> API : Password mismatch
+      deactivate Auth
+      API --> Frontend : 401 { error: "Invalid credentials" }
+      deactivate API
+      Frontend --> User : Alert: "Invalid credentials"
+    else Password matches
+      Auth -> DB : Create/update session record
+      activate DB
+      DB --> Auth : Session stored
+      deactivate DB
+      Auth --> API : Login successful,\nreturn user object
+      deactivate Auth
+      API --> Frontend : 200 { user: { id, name,\n  email, role, location } }\n+ Set-Cookie: session_id
+      deactivate API
+
+      Frontend -> Frontend : Store currentUser in memory
+      Frontend -> Frontend : updateUIAfterLogin()\n(show avatar, hide auth buttons)
+
+      note over Frontend
+        Navigation shown by role:
+        requester → My Requests, Create Request
+        volunteer → Browse, My Offers
+        admin → redirect to admin.html
+      end note
+
+      alt role == "requester"
+        Frontend -> API : GET /api/requests/mine
+        activate API
+        API -> DB : SELECT requests WHERE user_id = ?
+        activate DB
+        DB --> API : Return requests list
+        deactivate DB
+        API --> Frontend : 200 { requests: [...] }
+        deactivate API
+        Frontend --> User : Show Requester Dashboard\nwith active requests
+      else role == "volunteer"
+        Frontend -> API : GET /api/requests?status=open
+        activate API
+        API -> DB : SELECT open requests
+        activate DB
+        DB --> API : Return open requests
+        deactivate DB
+        API --> Frontend : 200 { requests: [...] }
+        deactivate API
+        Frontend --> User : Show Browse Requests page
+      else role == "admin"
+        Frontend --> User : Redirect to admin.html
+      end
+
+    end
+  end
+end
+
+deactivate Frontend
+
+@enduml
